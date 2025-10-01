@@ -4,7 +4,10 @@ type Resp =
   | { ok: true; abi: unknown[]; bytecode: `0x${string}` }
   | { ok: false; error: string };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<Resp>) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<Resp>,
+) {
   if (req.method !== "POST") {
     res.status(405).json({ ok: false, error: "Method not allowed" });
     return;
@@ -17,9 +20,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return;
     }
 
-  // Load solc server-side
-  // @ts-expect-error - no types for 'solc' in this project; runtime import is valid on server
-  const solcMod = await import("solc");
+    // Load solc server-side
+    // @ts-expect-error - no types for 'solc' in this project; runtime import is valid on server
+    const solcMod = await import("solc");
     const solc: any = (solcMod as any).default ?? solcMod;
 
     const input = {
@@ -49,9 +52,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return;
     }
 
-    const compiledFromFile: Record<string, any> | undefined = output?.contracts?.["Contract.sol"];
+    const compiledFromFile: Record<string, any> | undefined =
+      output?.contracts?.["Contract.sol"];
     if (!compiledFromFile || Object.keys(compiledFromFile).length === 0) {
-      res.status(400).json({ ok: false, error: "Compilation succeeded but produced no contracts." });
+      res
+        .status(400)
+        .json({
+          ok: false,
+          error: "Compilation succeeded but produced no contracts.",
+        });
       return;
     }
 
@@ -60,10 +69,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const abi = artifact?.abi ?? [];
     const bc: string | undefined = artifact?.evm?.bytecode?.object;
     if (!bc) {
-      res.status(400).json({ ok: false, error: "Bytecode not found (contract may be abstract)." });
+      res
+        .status(400)
+        .json({
+          ok: false,
+          error: "Bytecode not found (contract may be abstract).",
+        });
       return;
     }
-    const bytecode = (bc.startsWith("0x") ? bc : ("0x" + bc)) as `0x${string}`;
+    const bytecode = (bc.startsWith("0x") ? bc : "0x" + bc) as `0x${string}`;
 
     res.status(200).json({ ok: true, abi, bytecode });
   } catch (e: any) {

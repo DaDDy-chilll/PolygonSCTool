@@ -465,6 +465,10 @@ const SmartContractDeployer: React.FC = () => {
                         </a>
                       </div>
                     )}
+                    <div>
+   <strong>ABI JSON:</strong> {JSON.stringify(compiled?.abi, null, 2)}
+</div>
+
                   </div>
                 </div>
               )}
